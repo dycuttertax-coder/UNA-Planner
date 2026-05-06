@@ -188,9 +188,9 @@ function Calendar({year,month,log,onDateClick,today,selected}) {
     </div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
       {cells.map((day,i)=>{
-        if(!day) return <div key={i}/>;
+        if(!day) return <div key={`empty-${year}-${month}-${i}`}/>;
         const ds=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-        const e=log[ds],isT=ds===today,isSel=ds===selected,dow=(firstDay+day-1)%7;
+        const e=log[ds],isT=ds===today,isSel=ds===selected,dow=new Date(year,month,day).getDay();
         const sc=e?(SITES.find(s=>s.id===e.siteId)||{color:"#ccc"}).color:null;
         return <div key={day} onClick={()=>onDateClick(ds)} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"7px 2px",cursor:"pointer",borderRadius:12,background:isSel?"#1A1E2E":isT?"#EEF3FF":"transparent"}}>
           <span style={{fontSize:14,lineHeight:1,fontWeight:isSel||isT?800:400,color:isSel?"white":isT?"#4F86E8":dow===0?"#FF6B6B":dow===6?"#4F86E8":"#2D3748"}}>{day}</span>
@@ -295,9 +295,13 @@ export default function App() {
     setSelected(ds);
     const e=injLog[ds];
     const {site,position}=getSuggestionFromLog(injLog, ds);
+    // 가장 최근 기록된 용량 찾기
+    const recentDosage = Object.entries(injLog)
+      .filter(([d,v])=>d<ds&&v.dosage)
+      .sort(([a],[b])=>b.localeCompare(a))[0]?.[1]?.dosage || "0.8";
     setForm({
       time:e?.time||nowTime(),
-      dosage:e?.dosage||"0.8",
+      dosage:e?.dosage||recentDosage,
       notes:e?.notes||"",
       actualSiteId:e?.siteId||site.id,
       actualPosition:e?.position||position,
@@ -340,7 +344,7 @@ export default function App() {
       <div style={{background:"white",padding:"18px 18px 0",boxShadow:"0 1px 0 rgba(0,0,0,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div>
-            <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>💉 유나 플래너</div>
+            <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>🐥유나 플래너</div>
             <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>주사 부위 순환 · 성장 기록</div>
           </div>
           <div style={{background:todaySug.site.bg,borderRadius:14,padding:"7px 12px",textAlign:"right"}}>
@@ -390,16 +394,7 @@ export default function App() {
             {entry&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});}} style={{padding:"14px 16px",borderRadius:14,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:14,fontWeight:800,cursor:"pointer",fontFamily:FF}}>🗑</button>}
           </div>
         </div>
-        <div style={{...card,paddingBottom:14}}>
-          <div style={{fontSize:11,fontWeight:800,color:"#9AA5B4",marginBottom:10}}>매일 부위 교체 순환 방식</div>
-          {[{area:"arm",label:"왼팔 ↔ 오른팔",sub:"1~2일차 → 7~8일차에 2번으로",color:"#4F86E8",bg:"#EAF1FD"},{area:"abdomen",label:"왼쪽 배 ↔ 오른쪽 배",sub:"3~4일차 → 9~10일차에 2번으로",color:"#2DBF8A",bg:"#E4F9F2"},{area:"buttocks",label:"왼쪽 엉덩이 ↔ 오른쪽 엉덩이",sub:"5~6일차 → 11~12일차에 2번으로",color:"#F0693E",bg:"#FEF0EB"}].map(({area,label,sub,color,bg})=>(
-            <div key={area} style={{display:"flex",alignItems:"center",gap:10,background:bg,borderRadius:12,padding:"10px 12px",marginBottom:7}}>
-              <AreaIcon area={area} color={color} size={22}/>
-              <div><div style={{fontSize:12,color,fontWeight:700}}>{label}</div><div style={{fontSize:10,color,opacity:0.7}}>{sub}</div></div>
-            </div>
-          ))}
-          <div style={{fontSize:10,color:"#B0BAC8",marginTop:8,lineHeight:1.6}}>예시: 1일=왼팔1번 · 2일=오른팔1번 · 3일=왼배1번 · 4일=오른배1번 · 5일=왼엉1번 · 6일=오른엉1번 · 7일=왼팔2번…</div>
-        </div>
+
       </>}
 
       {/* ── 기록 TAB ── */}
