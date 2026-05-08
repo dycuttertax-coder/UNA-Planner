@@ -191,10 +191,11 @@ function Calendar({year,month,log,onDateClick,today,selected}) {
         if(!day) return <div key={`empty-${year}-${month}-${i}`}/>;
         const ds=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
         const e=log[ds],isT=ds===today,isSel=ds===selected,dow=new Date(year,month,day).getDay();
-        const sc=e?(SITES.find(s=>s.id===e.siteId)||{color:"#ccc"}).color:null;
-        return <div key={day} onClick={()=>onDateClick(ds)} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"7px 2px",cursor:"pointer",borderRadius:12,background:isSel?"#1A1E2E":isT?"#EEF3FF":"transparent"}}>
-          <span style={{fontSize:14,lineHeight:1,fontWeight:isSel||isT?800:400,color:isSel?"white":isT?"#4F86E8":dow===0?"#FF6B6B":dow===6?"#4F86E8":"#2D3748"}}>{day}</span>
-          <div style={{width:6,height:6,borderRadius:"50%",background:sc||"transparent",marginTop:3}}/>
+        const site=e?(SITES.find(s=>s.id===e.siteId)||null):null;
+        const sc=site?site.color:null;
+        return <div key={day} onClick={()=>onDateClick(ds)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"5px 1px",cursor:"pointer",borderRadius:10,background:isSel?"#1A1E2E":isT?"#EEF3FF":e?"white":"transparent",border:e&&!isSel?`1px solid ${sc}22`:"none"}}>
+          <span style={{fontSize:13,lineHeight:1,fontWeight:isSel||isT?800:e?700:400,color:isSel?"white":isT?"#4F86E8":dow===0?"#FF6B6B":dow===6?"#4F86E8":e?sc:"#2D3748"}}>{day}</span>
+          {e&&e.dosage ? <span style={{fontSize:8,fontWeight:700,color:isSel?"rgba(255,255,255,0.8)":sc,marginTop:2}}>{e.dosage}mg</span> : <div style={{height:12}}/>}
         </div>;
       })}
     </div>
