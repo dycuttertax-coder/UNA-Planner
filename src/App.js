@@ -345,8 +345,8 @@ export default function App() {
       <div style={{background:"white",padding:"18px 18px 0",boxShadow:"0 1px 0 rgba(0,0,0,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div>
-            <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>🐥유나 플래너</div>
-            <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>주사 부위 순환 · 성장 기록</div>
+            <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>🐣유나 플래너</div>
+            <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>주사·성장 기록</div>
           </div>
           <div style={{background:todaySug.site.bg,borderRadius:14,padding:"7px 12px",textAlign:"right"}}>
             <div style={{fontSize:10,color:todaySug.site.color,fontWeight:700}}>오늘 추천</div>
@@ -530,6 +530,7 @@ export default function App() {
             </div>
 
             <button onClick={saveInj} style={{width:"100%",padding:15,borderRadius:15,border:"none",background:actSite.color,color:"white",fontSize:16,fontWeight:800,cursor:"pointer",fontFamily:FF,boxShadow:`0 6px 20px ${actSite.color}40`}}>✓ 저장하기</button>
+            {injLog[selected]&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});setShowInjModal(false);}} style={{width:"100%",padding:13,borderRadius:15,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:FF,marginTop:10}}>🗑 기록 삭제</button>}
           </div>
         </div>;
       })()}
