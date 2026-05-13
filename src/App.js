@@ -345,7 +345,7 @@ export default function App() {
       <div style={{background:"white",padding:"18px 18px 0",boxShadow:"0 1px 0 rgba(0,0,0,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div>
-            <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>💉 성장호르몬 플래너</div>
+            <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>🐣유나 플래너</div>
             <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>
               {profile.birthDate
                 ? `💉 성장플래너 · ${fmtAge(ageYears(profile.birthDate, today))}`
