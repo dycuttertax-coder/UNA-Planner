@@ -346,7 +346,11 @@ export default function App() {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div>
             <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>🐣유나 플래너</div>
-            <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>주사·성장 기록</div>
+            <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>
+              {profile.birthDate
+                ? `💉 성장플래너 · ${fmtAge(ageYears(profile.birthDate, today))}`
+                : "💉 성장플래너 · 생년월일을 설정해주세요"}
+            </div>
           </div>
           <div style={{background:todaySug.site.bg,borderRadius:14,padding:"7px 12px",textAlign:"right"}}>
             <div style={{fontSize:10,color:todaySug.site.color,fontWeight:700}}>오늘 추천</div>
@@ -371,28 +375,29 @@ export default function App() {
           </div>
           <Calendar year={year} month={month} log={injLog} onDateClick={openInjModal} today={today} selected={selected}/>
         </div>
-        <div style={card}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
-            <div>
-              <div style={{fontSize:11,color:"#9AA5B4",fontWeight:600,marginBottom:3}}>{selected===today?"📍 오늘":selected} 주사 부위</div>
-              <div style={{fontSize:22,fontWeight:900,color:"#1A1E2E"}}>{dSite.label}</div>
-              <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}>
-                {pill(dSite.bg,dSite.color,`${dPos}번 부위`)}
+        <div style={{...card,padding:"14px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            {/* 좌: 부위 정보 */}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:10,color:"#9AA5B4",fontWeight:600,marginBottom:2}}>{selected===today?"📍 오늘":selected}</div>
+              <div style={{fontSize:13,fontWeight:900,color:"#1A1E2E",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dSite.label} {dPos}번 부위</div>
+              <div style={{display:"flex",gap:5,marginTop:4,flexWrap:"nowrap",alignItems:"center"}}>
                 {entry&&pill("#EDFAF3","#2DBF8A","✓ 기록됨")}
+                {entry&&entry.time&&<span style={{fontSize:12,fontWeight:700,color:"#2D3748"}}>{entry.time}</span>}
+                {entry&&entry.dosage&&<span style={{fontSize:11,color:"#9AA5B4"}}>{entry.dosage}mg</span>}
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:8}}>
+                <button onClick={()=>openInjModal(selected)} style={{flex:1,padding:"10px",borderRadius:12,border:"none",background:entry?"#F0F3F8":dSite.color,color:entry?"#2D3748":"white",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF}}>{entry?"✏️ 수정":"💉 기록하기"}</button>
+                {entry&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});}} style={{padding:"10px 12px",borderRadius:12,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF}}>🗑</button>}
               </div>
             </div>
-            {entry&&<div style={{textAlign:"right",background:"#F7F9FC",borderRadius:12,padding:"10px 14px"}}>
-              {entry.time&&<div style={{fontSize:18,fontWeight:800,color:"#1A1E2E"}}>{entry.time}</div>}
-              {entry.dosage&&<div style={{fontSize:12,color:"#9AA5B4",marginTop:2}}>{entry.dosage}</div>}
-            </div>}
-          </div>
-          <div onClick={()=>setShowDiagram(true)} style={{background:dSite.bg,borderRadius:16,padding:"14px",display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",border:`2px solid ${dSite.color}20`}}>
-            <BodyDiagram site={dSite} position={dPos}/>
-            <div style={{fontSize:11,color:dSite.color,marginTop:8,fontWeight:700}}>👆 탭하여 크게 보기</div>
-          </div>
-          <div style={{display:"flex",gap:10,marginTop:12}}>
-            <button onClick={()=>openInjModal(selected)} style={{flex:1,padding:"14px",borderRadius:14,border:"none",background:entry?"#F0F3F8":dSite.color,color:entry?"#2D3748":"white",fontSize:14,fontWeight:800,cursor:"pointer",fontFamily:FF}}>{entry?"✏️ 수정":"💉 기록하기"}</button>
-            {entry&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});}} style={{padding:"14px 16px",borderRadius:14,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:14,fontWeight:800,cursor:"pointer",fontFamily:FF}}>🗑</button>}
+            {/* 우: 이미지 */}
+            <div onClick={()=>setShowDiagram(true)} style={{background:dSite.bg,borderRadius:14,padding:"8px",cursor:"pointer",border:`2px solid ${dSite.color}20`,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center"}}>
+              <div style={{transform:"scale(0.55)",transformOrigin:"top center",width:dSite.area==="arm"?115:185,height:dSite.area==="arm"?100:dSite.area==="abdomen"?100:85}}>
+                <BodyDiagram site={dSite} position={dPos}/>
+              </div>
+              <div style={{fontSize:9,color:dSite.color,fontWeight:700,marginTop:2}}>👆 크게 보기</div>
+            </div>
           </div>
         </div>
 
@@ -482,55 +487,55 @@ export default function App() {
         for(let v=0.1;v<=3.01;v+=0.1) dosageOptions.push((Math.round(v*10)/10).toFixed(1));
         const maxPos=actSite.maxPos;
         return <div style={{position:"fixed",inset:0,background:"rgba(15,20,35,0.6)",display:"flex",alignItems:"flex-end",zIndex:100,backdropFilter:"blur(4px)"}} onClick={()=>setShowInjModal(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:390,margin:"0 auto",background:"white",borderRadius:"26px 26px 0 0",padding:"10px 20px 44px",maxHeight:"90vh",overflowY:"auto"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0 18px"}}>
-              <div style={{fontSize:17,fontWeight:900,color:"#1A1E2E"}}>주사 기록</div>
-              <button onClick={()=>setShowInjModal(false)} style={{background:"#F0F3F8",border:"none",borderRadius:"50%",width:34,height:34,fontSize:16,cursor:"pointer",color:"#9AA5B4",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-            </div>
-            <div style={{fontSize:11,color:"#9AA5B4",marginBottom:16}}>{selected} · 추천: {sugSite2.label} {sugPos2}번</div>
-
-            {/* 시간 */}
-            <div style={{marginBottom:14}}>
-              <label style={{display:"block",fontSize:12,fontWeight:700,color:"#4A5568",marginBottom:7}}>🕐 접종 시간</label>
-              <input type="time" value={form.time} onChange={e=>setForm(p=>({...p,time:e.target.value}))} style={{...inp,fontWeight:700,fontSize:18}}/>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:390,margin:"0 auto",background:"white",borderRadius:"26px 26px 0 0",padding:"8px 16px 30px"}}>
+            {/* 헤더 */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0 6px"}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:900,color:"#1A1E2E"}}>주사 기록</div>
+                <div style={{fontSize:10,color:"#9AA5B4"}}>{selected} · 추천: {sugSite2.label} {sugPos2}번</div>
+              </div>
+              <button onClick={()=>setShowInjModal(false)} style={{background:"#F0F3F8",border:"none",borderRadius:"50%",width:30,height:30,fontSize:14,cursor:"pointer",color:"#9AA5B4",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
 
-            {/* 용량 스크롤 선택 */}
-            <div style={{marginBottom:14}}>
-              <label style={{display:"block",fontSize:12,fontWeight:700,color:"#4A5568",marginBottom:7}}>💊 용량 (mg)</label>
-              <select value={form.dosage} onChange={e=>setForm(p=>({...p,dosage:e.target.value}))}
-                style={{...inp,fontSize:20,fontWeight:800,color:"#1A1E2E",appearance:"none",textAlign:"center",cursor:"pointer"}}>
-                {dosageOptions.map(v=><option key={v} value={v}>{v} mg</option>)}
-              </select>
+            {/* 시간 + 용량 한 줄 */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+              <div>
+                <label style={{display:"block",fontSize:10,fontWeight:700,color:"#4A5568",marginBottom:4}}>🕐 접종 시간</label>
+                <input type="time" value={form.time} onChange={e=>setForm(p=>({...p,time:e.target.value}))} style={{...inp,padding:"9px 10px",fontSize:15,fontWeight:700}}/>
+              </div>
+              <div>
+                <label style={{display:"block",fontSize:10,fontWeight:700,color:"#4A5568",marginBottom:4}}>💊 용량 (mg)</label>
+                <select value={form.dosage} onChange={e=>setForm(p=>({...p,dosage:e.target.value}))} style={{...inp,padding:"9px 10px",fontSize:15,fontWeight:800,appearance:"none",textAlign:"center",cursor:"pointer"}}>
+                  {dosageOptions.map(v=><option key={v} value={v}>{v}</option>)}
+                </select>
+              </div>
             </div>
 
-            {/* 실제 접종 부위 - 이미지에서 직접 선택 */}
-            <div style={{marginBottom:14}}>
-              <label style={{display:"block",fontSize:12,fontWeight:700,color:"#4A5568",marginBottom:8}}>📍 실제 접종 부위</label>
-              {/* 부위 선택 버튼 */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5,marginBottom:12}}>
+            {/* 실제 접종 부위 */}
+            <div style={{marginBottom:8}}>
+              <label style={{display:"block",fontSize:10,fontWeight:700,color:"#4A5568",marginBottom:5}}>📍 실제 접종 부위</label>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4,marginBottom:6}}>
                 {SITES.map(s=><button key={s.id} onClick={()=>setForm(p=>({...p,actualSiteId:s.id,actualPosition:1}))}
-                  style={{padding:"8px 2px",borderRadius:10,border:`2px solid ${form.actualSiteId===s.id?s.color:"#E8EDF5"}`,background:form.actualSiteId===s.id?s.bg:"white",color:form.actualSiteId===s.id?s.color:"#9AA5B4",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:FF}}>
+                  style={{padding:"6px 2px",borderRadius:8,border:`2px solid ${form.actualSiteId===s.id?s.color:"#E8EDF5"}`,background:form.actualSiteId===s.id?s.bg:"white",color:form.actualSiteId===s.id?s.color:"#9AA5B4",fontSize:9,fontWeight:700,cursor:"pointer",fontFamily:FF}}>
                   {s.label}
                 </button>)}
               </div>
-              {/* SVG 이미지에서 번호 직접 탭 */}
-              <div style={{fontSize:11,color:actSite.color,fontWeight:700,marginBottom:6,textAlign:"center"}}>
-                이미지에서 번호를 탭해서 선택하세요 · 현재 <strong>{form.actualPosition}번</strong>
-              </div>
-              <div style={{background:actSite.bg,borderRadius:16,padding:"12px",display:"flex",justifyContent:"center",border:`2px solid ${actSite.color}20`}}>
-                <BodyDiagram site={actSite} position={form.actualPosition} onSelect={n=>setForm(p=>({...p,actualPosition:n}))}/>
+              <div style={{fontSize:10,color:actSite.color,fontWeight:700,marginBottom:4,textAlign:"center"}}>번호 탭해서 선택 · 현재 <strong>{form.actualPosition}번</strong></div>
+              <div style={{background:actSite.bg,borderRadius:12,padding:"6px",display:"flex",justifyContent:"center",border:`2px solid ${actSite.color}20`}}>
+                <div style={{transform:"scale(0.6)",transformOrigin:"top center",width:actSite.area==="arm"?115:185,height:actSite.area==="arm"?180:actSite.area==="abdomen"?178:150}}>
+                  <BodyDiagram site={actSite} position={form.actualPosition} onSelect={n=>setForm(p=>({...p,actualPosition:n}))}/>
+                </div>
               </div>
             </div>
 
             {/* 메모 */}
-            <div style={{marginBottom:20}}>
-              <label style={{display:"block",fontSize:12,fontWeight:700,color:"#4A5568",marginBottom:7}}>📝 메모</label>
-              <textarea value={form.notes} onChange={e=>setForm(p=>({...p,notes:e.target.value}))} placeholder="특이사항" rows={2} style={{...inp,resize:"none",lineHeight:1.6}}/>
+            <div style={{marginBottom:8}}>
+              <label style={{display:"block",fontSize:10,fontWeight:700,color:"#4A5568",marginBottom:4}}>📝 메모</label>
+              <textarea value={form.notes} onChange={e=>setForm(p=>({...p,notes:e.target.value}))} placeholder="특이사항" rows={1} style={{...inp,padding:"9px 10px",resize:"none",lineHeight:1.5}}/>
             </div>
 
-            <button onClick={saveInj} style={{width:"100%",padding:15,borderRadius:15,border:"none",background:actSite.color,color:"white",fontSize:16,fontWeight:800,cursor:"pointer",fontFamily:FF,boxShadow:`0 6px 20px ${actSite.color}40`}}>✓ 저장하기</button>
-            {injLog[selected]&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});setShowInjModal(false);}} style={{width:"100%",padding:13,borderRadius:15,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:FF,marginTop:10}}>🗑 기록 삭제</button>}
+            <button onClick={saveInj} style={{width:"100%",padding:12,borderRadius:13,border:"none",background:actSite.color,color:"white",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:FF,boxShadow:`0 4px 14px ${actSite.color}40`}}>✓ 저장하기</button>
+            {injLog[selected]&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});setShowInjModal(false);}} style={{width:"100%",padding:10,borderRadius:13,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF,marginTop:6}}>🗑 기록 삭제</button>}
           </div>
         </div>;
       })()}
