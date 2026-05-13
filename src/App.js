@@ -376,21 +376,31 @@ export default function App() {
           <Calendar year={year} month={month} log={injLog} onDateClick={openInjModal} today={today} selected={selected}/>
         </div>
         <div style={{background:dSite.bg,borderRadius:22,padding:"14px 16px",border:`2px solid ${dSite.color}30`,boxShadow:"0 2px 14px rgba(0,0,0,0.06)",margin:"0 14px 12px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
-            <div style={{fontSize:10,color:dSite.color,fontWeight:700}}>📍 {selected===today?"오늘":""+selected} 주사 부위</div>
+          {/* 상단: 부위정보 + 기록됨 */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <div style={{fontSize:10,color:dSite.color,fontWeight:700}}>📍 {selected===today?"오늘":selected} 주사 부위</div>
             {entry&&pill("white",dSite.color,"✓ 기록됨")}
           </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
             <div style={{fontSize:18,fontWeight:900,color:"#1A1E2E"}}>{dSite.label} <span style={{color:dSite.color}}>{dPos}번</span></div>
-            {entry&&<div style={{fontSize:14,fontWeight:700,color:"#1A1E2E"}}>{entry.time&&entry.time} <span style={{fontSize:11,color:"#9AA5B4",fontWeight:400}}>{entry.dosage&&entry.dosage+"mg"}</span></div>}
+            {entry&&<div style={{fontSize:13,fontWeight:700,color:"#1A1E2E"}}>{entry.time} <span style={{fontSize:11,color:"#9AA5B4",fontWeight:400}}>{entry.dosage&&entry.dosage+"mg"}</span></div>}
           </div>
+          {/* 이미지 */}
+          <div onClick={()=>setShowDiagram(true)} style={{background:"rgba(255,255,255,0.6)",borderRadius:14,padding:"10px",display:"flex",justifyContent:"center",alignItems:"center",cursor:"pointer",marginBottom:10,minHeight:120,overflow:"hidden"}}>
+            <div style={{transform:"scale(0.62)",transformOrigin:"center center",display:"flex",alignItems:"center",justifyContent:"center",
+              width:dSite.area==="arm"?115:185,
+              height:dSite.area==="arm"?180:dSite.area==="abdomen"?178:150,
+              marginTop:dSite.area==="arm"?"-55px":"-60px",
+              marginBottom:dSite.area==="arm"?"-55px":"-60px"}}>
+              <BodyDiagram site={dSite} position={dPos}/>
+            </div>
+          </div>
+          {/* 버튼 */}
           <div style={{display:"flex",gap:8}}>
             {entry&&<button onClick={()=>openInjModal(selected)} style={{flex:1,padding:"11px",borderRadius:12,border:`2px solid ${dSite.color}`,background:"white",color:dSite.color,fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF}}>✏️ 수정</button>}
             {!entry&&<button onClick={()=>openInjModal(selected)} style={{flex:1,padding:"11px",borderRadius:12,border:"none",background:dSite.color,color:"white",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF}}>💉 기록하기</button>}
-            {entry&&<button onClick={()=>setShowDiagram(true)} style={{flex:1,padding:"11px",borderRadius:12,border:"none",background:"white",color:"#2D3748",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF,boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>🔍 부위 보기</button>}
             {entry&&<button onClick={()=>{setInjLog(p=>{const n={...p};delete n[selected];return n;});}} style={{padding:"11px 13px",borderRadius:12,border:"none",background:"#FFE8E8",color:"#FF6B6B",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:FF}}>🗑</button>}
           </div>
-          {!entry&&<button onClick={()=>setShowDiagram(true)} style={{width:"100%",padding:"8px",borderRadius:10,border:"none",background:"rgba(255,255,255,0.6)",color:dSite.color,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:FF,marginTop:6}}>🔍 부위 이미지 보기</button>}
         </div>
 
       </>}
@@ -490,16 +500,20 @@ export default function App() {
             </div>
 
             {/* 시간 + 용량 한 줄 */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8,alignItems:"end"}}>
-              <div>
+            <div style={{display:"flex",gap:8,marginBottom:8}}>
+              <div style={{flex:1}}>
                 <label style={{display:"block",fontSize:10,fontWeight:700,color:"#4A5568",marginBottom:4}}>🕐 접종 시간</label>
-                <input type="time" value={form.time} onChange={e=>setForm(p=>({...p,time:e.target.value}))} style={{...inp,padding:"10px",fontSize:14,fontWeight:700,height:42,boxSizing:"border-box"}}/>
+                <div style={{background:"#F7F9FC",border:"2px solid #E8EDF5",borderRadius:13,height:44,display:"flex",alignItems:"center",overflow:"hidden"}}>
+                  <input type="time" value={form.time} onChange={e=>setForm(p=>({...p,time:e.target.value}))} style={{border:"none",background:"transparent",fontSize:14,fontWeight:700,color:"#1A1E2E",width:"100%",padding:"0 10px",outline:"none",fontFamily:FF}}/>
+                </div>
               </div>
-              <div>
+              <div style={{flex:1}}>
                 <label style={{display:"block",fontSize:10,fontWeight:700,color:"#4A5568",marginBottom:4}}>💊 용량 (mg)</label>
-                <select value={form.dosage} onChange={e=>setForm(p=>({...p,dosage:e.target.value}))} style={{...inp,padding:"10px",fontSize:14,fontWeight:800,appearance:"none",textAlign:"center",cursor:"pointer",height:42,boxSizing:"border-box"}}>
-                  {dosageOptions.map(v=><option key={v} value={v}>{v}</option>)}
-                </select>
+                <div style={{background:"#F7F9FC",border:"2px solid #E8EDF5",borderRadius:13,height:44,display:"flex",alignItems:"center",overflow:"hidden"}}>
+                  <select value={form.dosage} onChange={e=>setForm(p=>({...p,dosage:e.target.value}))} style={{border:"none",background:"transparent",fontSize:14,fontWeight:800,color:"#1A1E2E",width:"100%",padding:"0 10px",outline:"none",appearance:"none",textAlign:"center",cursor:"pointer",fontFamily:FF}}>
+                    {dosageOptions.map(v=><option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 
