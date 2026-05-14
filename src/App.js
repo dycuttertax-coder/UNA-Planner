@@ -26,17 +26,30 @@ const SITES = [
   { id:"L-but", label:"왼쪽 엉덩이",   area:"buttocks", side:"left",  color:"#F0693E", bg:"#FEF0EB", maxPos:9 },
   { id:"R-but", label:"오른쪽 엉덩이", area:"buttocks", side:"right", color:"#F0693E", bg:"#FEF0EB", maxPos:9 },
 ];
-// 실제 접종 기록 기반으로 다음 부위 계산
+// 최근 7일 실제 접종 기록 기반으로 다음 부위 추천
+// - 다음 부위: 최근 7일 마지막 접종 부위의 다음 순서
+// - 포지션: 전체 기록에서 해당 부위 사용 횟수 기반 (이어서 진행)
 function getSuggestionFromLog(injLog, beforeDate) {
-  const past = Object.entries(injLog)
+  const allPast = Object.entries(injLog)
     .filter(([d,v]) => (!beforeDate || d < beforeDate) && v.logged && v.siteId)
     .sort(([a],[b]) => a.localeCompare(b));
-  if (past.length === 0) return { site: SITES[0], position: 1 };
-  const lastSiteId = past[past.length-1][1].siteId;
+  if (allPast.length === 0) return { site: SITES[0], position: 1 };
+
+  // 최근 7일 기록으로 다음 부위 결정 (실수해도 7일 내 자동 복구)
+  const cutoff = new Date(beforeDate || new Date());
+  cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+  const recent = allPast.filter(([d]) => d >= cutoffStr);
+  const ref = recent.length > 0 ? recent : allPast.slice(-3);
+
+  // 마지막 실제 접종 부위의 다음 부위
+  const lastSiteId = ref[ref.length-1][1].siteId;
   const lastSiteIdx = SITES.findIndex(s => s.id === lastSiteId);
   const nextSiteIdx = (lastSiteIdx + 1) % SITES.length;
   const nextSite = SITES[nextSiteIdx];
-  const usedCount = past.filter(([,v]) => v.siteId === nextSite.id).length;
+
+  // 포지션: 전체 기록에서 해당 부위 사용 횟수 (7~9번도 정상 등장)
+  const usedCount = allPast.filter(([,v]) => v.siteId === nextSite.id).length;
   const nextPos = (usedCount % nextSite.maxPos) + 1;
   return { site: nextSite, position: nextPos };
 }
@@ -348,7 +361,7 @@ export default function App() {
             <div style={{fontSize:19,fontWeight:900,color:"#1A1E2E",letterSpacing:-0.5}}>🐣유나 플래너</div>
             <div style={{fontSize:11,color:"#9AA5B4",marginTop:1}}>
               {profile.birthDate
-                ? `💉 성장플래너 · ${fmtAge(ageYears(profile.birthDate, today))}`
+                ? `${fmtAge(ageYears(profile.birthDate, today))}`
                 : "💉 성장플래너 · 생년월일을 설정해주세요"}
             </div>
           </div>
