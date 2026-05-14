@@ -48,9 +48,10 @@ function getSuggestionFromLog(injLog, beforeDate) {
   const nextSiteIdx = (lastSiteIdx + 1) % SITES.length;
   const nextSite = SITES[nextSiteIdx];
 
-  // 포지션: 전체 기록에서 해당 부위 사용 횟수 (7~9번도 정상 등장)
-  const usedCount = allPast.filter(([,v]) => v.siteId === nextSite.id).length;
-  const nextPos = (usedCount % nextSite.maxPos) + 1;
+  // 포지션: 해당 부위의 마지막 사용 번호 + 1 (건너뛴 번호 없이 이어서)
+  const lastUsage = allPast.filter(([,v]) => v.siteId === nextSite.id).slice(-1)[0];
+  const lastPos = lastUsage ? (lastUsage[1].position || 0) : 0;
+  const nextPos = lastPos >= nextSite.maxPos ? 1 : lastPos + 1;
   return { site: nextSite, position: nextPos };
 }
 
